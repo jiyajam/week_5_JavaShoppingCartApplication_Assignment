@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/jiyajam/shopping-cart.git'
+                git 'https://github.com/jiyajam/week_5_JavaShoppingCartApplication_Assignment.git'
             }
         }
 
