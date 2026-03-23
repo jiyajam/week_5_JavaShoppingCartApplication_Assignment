@@ -1,38 +1,69 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven3'
+    }
+
+    environment {
+        DOCKER_HUB_USER = "jiyak"
+        DOCKERHUB_CREDENTIALS = 'Docker_Hub'
+        IMAGE_NAME = "shopping-cart-app"
+        BUILD_TAG = "${env.BUILD_NUMBER}"
+        DOCKER_IMAGE = "${DOCKER_HUB_USER}/${IMAGE_NAME}:${BUILD_TAG}"
+        CONTAINER_NAME = "${IMAGE_NAME}-${BUILD_TAG}"
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
-                git 'https://github.com/jiyajam/week_5_JavaShoppingCartApplication_Assignment.git'
+                git branch: 'main', url: 'https://github.com/jiyajam/week_5_JavaShoppingCartApplication_Assignment.git'
             }
         }
 
-        stage('Build') {
+        stage('Build JAR') {
             steps {
                 sh 'mvn clean package'
             }
         }
 
-        stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t yourdockerhub/shopping-cart .'
+                sh "docker build -t ${DOCKER_IMAGE} ."
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Login to Docker Hub') {
             steps {
-                withCredentials([string(credentialsId: 'dockerhub-pass', variable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u yourdockerhub --password-stdin'
+                withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDENTIALS}",
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS')]) {
+                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                 }
-                sh 'docker push yourdockerhub/shopping-cart'
             }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                sh "docker push ${DOCKER_IMAGE}"
+            }
+        }
+
+        stage('Run Container for Testing') {
+            steps {
+                sh "docker rm -f ${CONTAINER_NAME} || true"
+                sh "docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${DOCKER_IMAGE}"
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline finished for build #${BUILD_NUMBER}"
+        }
+        failure {
+            echo "Build #${BUILD_NUMBER} failed!"
         }
     }
 }
