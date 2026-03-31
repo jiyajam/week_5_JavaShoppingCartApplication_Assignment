@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="cart.MainController"
+      spacing="10">
+
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <HBox spacing="10">
+        <Label text="%select.language"/>
+        <ComboBox fx:id="languageBox"/>
+        <Button text="%confirm.language" onAction="#changeLanguage"/>
+    </HBox>
+
+    <HBox spacing="10">
+        <Label text="%enter.items"/>
+        <TextField fx:id="itemCountField"/>
+        <Button text="%enter.items.button" onAction="#generateItemFields"/>
+    </HBox>
+
+    <VBox fx:id="itemsContainer" spacing="5"/>
+
+    <Button text="%calculate.total" onAction="#calculateTotal"/>
+
+    <Label fx:id="totalLabel" text="0.00"/>
+</VBox>

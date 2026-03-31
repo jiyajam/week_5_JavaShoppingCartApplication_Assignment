@@ -11,7 +11,6 @@ pipeline {
         IMAGE_NAME = "shopping-cart-app"
         BUILD_TAG = "${env.BUILD_NUMBER}"
         DOCKER_IMAGE = "${DOCKER_HUB_USER}/${IMAGE_NAME}:${BUILD_TAG}"
-        CONTAINER_NAME = "${IMAGE_NAME}-${BUILD_TAG}"
     }
 
     stages {
@@ -47,13 +46,6 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 sh "docker push ${DOCKER_IMAGE}"
-            }
-        }
-
-        stage('Run Container for Testing') {
-            steps {
-                sh "docker rm -f ${CONTAINER_NAME} || true"
-                sh "docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${DOCKER_IMAGE}"
             }
         }
     }
