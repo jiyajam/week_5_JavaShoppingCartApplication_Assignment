@@ -14,20 +14,20 @@
     </padding>
 
     <HBox spacing="10">
-        <Label text="%select.language"/>
+        <Label fx:id="selectLangLabel" text="Select Language"/>
         <ComboBox fx:id="languageBox"/>
-        <Button text="%confirm.language" onAction="#changeLanguage"/>
+        <Button fx:id="confirmBtn" text="Confirm" onAction="#changeLanguage"/>
     </HBox>
 
     <HBox spacing="10">
-        <Label text="%enter.items"/>
+        <Label fx:id="enterItemsLabel" text="Enter items"/>
         <TextField fx:id="itemCountField"/>
-        <Button text="%enter.items.button" onAction="#generateItemFields"/>
+        <Button fx:id="generateBtn" text="Generate" onAction="#generateItemFields"/>
     </HBox>
 
     <VBox fx:id="itemsContainer" spacing="5"/>
 
-    <Button text="%calculate.total" onAction="#calculateTotal"/>
+    <Button fx:id="calculateBtn" text="Calculate" onAction="#calculateTotal"/>
 
     <Label fx:id="totalLabel" text="0.00"/>
 </VBox>

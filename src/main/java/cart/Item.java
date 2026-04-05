@@ -1,8 +1,6 @@
 package cart;
 
-
 public class Item {
-
     private final double price;
     private final int quantity;
 
@@ -14,5 +12,13 @@ public class Item {
     public double getTotalCost() {
         return price * quantity;
     }
-}
 
+    // ADD THESE GETTERS:
+    public double getPrice() {
+        return price;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+}
