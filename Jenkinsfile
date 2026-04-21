@@ -3,7 +3,7 @@ pipeline {
 
     tools {
         maven 'Maven3'
-        jdk 'JDK17' // Match your pom.xml compiler version
+        jdk 'JDK21'
     }
 
     environment {
