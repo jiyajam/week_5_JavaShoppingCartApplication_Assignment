@@ -13,4 +13,6 @@ RUN apt-get update && apt-get install -y \
 COPY target/week_5_JavaShoppingCartApplication_Assignment-1.0-SNAPSHOT.jar app.jar
 
 # Use cart.Launcher and Software Rendering flags
-CMD ["java", "-Dprism.order=sw", "-Dglass.platform=gtk", "--module-path", "/opt/javafx/lib", "--add-modules", "javafx.controls,javafx.fxml", "-cp", "app.jar", "cart.Launcher"]
+CMD ["java", "-Dprism.order=sw", "-Dglass.platform=gtk", \
+     "--module-path", "/opt/javafx/lib", "--add-modules", "javafx.controls,javafx.fxml", \
+     "-cp", "app.jar", "cart.Main"]
