@@ -77,9 +77,13 @@
   </dependencies>
   <properties>
     <maven.compiler.target>17</maven.compiler.target>
+    <sonar.projectKey>JavaShoppingCart</sonar.projectKey>
     <maven.compiler.source>17</maven.compiler.source>
+    <sonar.host.url>http://localhost:9000</sonar.host.url>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <javafx.version>21.0.1</javafx.version>
     <junit.jupiter.version>5.10.2</junit.jupiter.version>
+    <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.exclusions>src/main/java/cart/Main.java, src/main/java/cart/MainController.java</sonar.exclusions>
   </properties>
 </project>

@@ -17,6 +17,11 @@
 
         <javafx.version>21.0.1</javafx.version>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
+        <sonar.projectKey>JavaShoppingCart</sonar.projectKey>
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.exclusions>src/main/java/cart/Main.java, src/main/java/cart/MainController.java</sonar.exclusions>
+
     </properties>
 
     <dependencies>
@@ -40,6 +45,11 @@
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
         </dependency>
 
 
@@ -84,6 +94,9 @@
                     </execution>
                 </executions>
             </plugin>
+
+
+
 
             <!-- Shade plugin to create runnable fat JAR -->
             <plugin>

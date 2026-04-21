@@ -16,7 +16,6 @@ public class ShoppingCart {
                 .sum();
     }
 
-    // ADD THIS GETTER:
     public List<Item> getItems() {
         return items;
     }

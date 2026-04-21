@@ -13,7 +13,7 @@ public class Item {
         return price * quantity;
     }
 
-    // ADD THESE GETTERS:
+
     public double getPrice() {
         return price;
     }

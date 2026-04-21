@@ -1,74 +1,92 @@
 package cart;
 
-
+import io.github.cdimascio.dotenv.Dotenv;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CartService {
-    private final String url = "jdbc:mariadb://localhost:3306/shopping_cart_localization";
-    private final String user = "root";
-    private final String pass = "password";
 
-    // TASK: Read UI messages from a database table
-    public Map<String, String> getTranslations(String langCode) {
-        Map<String, String> translations = new HashMap<>();
-        String query = "SELECT message_key, message_text FROM translations WHERE language_code = ?";
+  private static final Logger LOGGER = Logger.getLogger(CartService.class.getName());
+  private static final String URL = "jdbc:mariadb://localhost:3306/shopping_cart_localization";
+  private static final String USER = "root";
 
-        try (Connection conn = DriverManager.getConnection(url, user, pass);
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+  private static final Dotenv DOTENV = Dotenv.load();
+  private static final String PASS = DOTENV.get("DB_PASSWORD");
 
-            stmt.setString(1, langCode);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                translations.put(rs.getString("message_key"), rs.getString("message_text"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+  public Map<String, String> getTranslations(String langCode) {
+    Map<String, String> translations = new HashMap<>();
+    String query = "SELECT message_key, message_text FROM translations WHERE language_code = ?";
+
+    try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+         PreparedStatement stmt = conn.prepareStatement(query)) {
+
+      stmt.setString(1, langCode);
+
+      try (ResultSet rs = stmt.executeQuery()) {
+        while (rs.next()) {
+          translations.put(rs.getString("message_key"), rs.getString("message_text"));
         }
-        return translations;
+      }
+    } catch (SQLException e) {
+      LOGGER.log(Level.SEVERE, "Database error fetching translations", e);
+    }
+    return translations;
+  }
+
+  public void saveCart(ShoppingCart cart, String language) {
+    String recordSql = "INSERT INTO cart_records (total_items, total_cost, language) VALUES (?, ?, ?)";
+    String itemSql = "INSERT INTO cart_items (cart_record_id, item_number, price, quantity) VALUES (?, ?, ?, ?)";
+
+    try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
+      conn.setAutoCommit(false);
+
+      int cartRecordId = insertCartRecord(conn, recordSql, cart, language);
+
+      if (cartRecordId != -1) {
+        insertCartItems(conn, itemSql, cart, cartRecordId);
+        conn.commit();
+        LOGGER.info("Cart saved successfully.");
+      }
+    } catch (SQLException e) {
+      LOGGER.log(Level.SEVERE, "Database transaction failed", e);
+    }
+  }
+
+  private int insertCartRecord(Connection conn, String sql, ShoppingCart cart, String lang) throws SQLException {
+    try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+      ps.setInt(1, cart.getItems().size());
+      ps.setDouble(2, cart.calculateTotal());
+      ps.setString(3, lang);
+      ps.executeUpdate();
+
+      try (ResultSet rs = ps.getGeneratedKeys()) {
+        return rs.next() ? rs.getInt(1) : -1;
+      }
+    }
+  }
+
+  private void insertCartItems(Connection conn, String sql, ShoppingCart cart, int recordId) throws SQLException {
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+      int itemNum = 1;
+
+      // Fix: Set the constant parameter ONCE outside the loop
+      ps.setInt(1, recordId);
+
+      for (Item item : cart.getItems()) {
+        // Only set the parameters that change
+        ps.setInt(2, itemNum++);
+        ps.setDouble(3, item.getPrice());
+        ps.setInt(4, item.getQuantity());
+
+        ps.addBatch();
+        // Note: We do NOT call clearParameters() here because we want
+        // the recordId (param 1) to persist for the next batch entry.
+      }
+      ps.executeBatch();
     }
 
-    // TASK: Save shopping cart calculations and individual items
-    public void saveCart(ShoppingCart cart, String language) {
-        String recordSql = "INSERT INTO cart_records (total_items, total_cost, language) VALUES (?, ?, ?)";
-        String itemSql = "INSERT INTO cart_items (cart_record_id, item_number, price, quantity) VALUES (?, ?, ?, ?)";
-
-        try (Connection conn = DriverManager.getConnection(url, user, pass)) {
-            conn.setAutoCommit(false); // Start Transaction
-
-            // 1. Save main record and get the ID
-            try (PreparedStatement psRecord = conn.prepareStatement(recordSql, Statement.RETURN_GENERATED_KEYS)) {
-                psRecord.setInt(1, cart.getItems().size());
-                psRecord.setDouble(2, cart.calculateTotal());
-                psRecord.setString(3, language);
-                psRecord.executeUpdate();
-
-                ResultSet rs = psRecord.getGeneratedKeys();
-                if (rs.next()) {
-                    int cartRecordId = rs.getInt(1);
-
-                    // 2. Save individual items using the Foreign Key
-                    try (PreparedStatement psItem = conn.prepareStatement(itemSql)) {
-                        int itemNum = 1;
-                        for (Item item : cart.getItems()) {
-                            psItem.setInt(1, cartRecordId);
-                            psItem.setInt(2, itemNum++);
-                            psItem.setDouble(3, item.getPrice());
-                            psItem.setInt(4, item.getQuantity());
-                            psItem.addBatch();
-                        }
-                        psItem.executeBatch();
-                    }
-                }
-                conn.commit(); // Success!
-                System.out.println("Cart saved successfully to MariaDB.");
-            } catch (SQLException e) {
-                conn.rollback(); // Undo if something goes wrong
-                throw e;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+  }
 }
